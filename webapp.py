@@ -9,7 +9,8 @@ st.title("Webpage Generator")
 
 load_dotenv()
 HF_TOKEN = os.getenv("HF_TOKEN") or st.secrets.get("HF_TOKEN", "")
-MODEL = "mistralai/Mixtral-8x7B-Instruct-v0.1"
+MODEL = "mistralai/Mistral-7B-Instruct-v0.2"
+
 
 if not HF_TOKEN:
     st.error("Hugging Face token not found. Please set HF_TOKEN in a .env file.")
