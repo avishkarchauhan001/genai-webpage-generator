@@ -8,7 +8,7 @@ st.set_page_config(page_title="GENAI Webpage Generator", layout="wide")
 st.title("Webpage Generator")
 
 load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
+HF_TOKEN = os.getenv("HF_TOKEN") or st.secrets.get("HF_TOKEN", "")
 MODEL = "mistralai/Mixtral-8x7B-Instruct-v0.1"
 
 if not HF_TOKEN:
