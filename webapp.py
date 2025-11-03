@@ -45,16 +45,18 @@ if st.button("Generate Webpage"):
                     temperature=0.7,
                 )
                 
-                html_code = response.choices[0].message.content.strip()
+                html_code = response.choices.message.content.strip()
                 
-                if "```
-                    parts = html_code.split("```html")
+                # Clean markdown code blocks - using variable to avoid syntax error
+                backticks = "```"
+                if backticks + "html" in html_code:
+                    parts = html_code.split(backticks + "html")
                     if len(parts) > 1:
-                        html_code = parts[1].split("```
-                elif "```" in html_code:
-                    parts = html_code.split("```
+                        html_code = parts[1].split(backticks)[0].strip()
+                elif backticks in html_code:
+                    parts = html_code.split(backticks)
                     if len(parts) > 2:
-                        html_code = parts.strip()[1]
+                        html_code = parts[1].strip()
                 
                 if not html_code.endswith("</html>"):
                     html_code += "\n</html>"
