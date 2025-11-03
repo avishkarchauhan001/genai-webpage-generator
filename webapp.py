@@ -10,7 +10,6 @@ st.title("Webpage Generator")
 load_dotenv()
 HF_TOKEN = os.getenv("HF_TOKEN") or st.secrets.get("HF_TOKEN", "")
 
-# Try different models that work with free tier
 MODELS = {
     "Qwen 2.5 Coder": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "Meta Llama 3.2": "meta-llama/Llama-3.2-3B-Instruct",
@@ -24,30 +23,18 @@ if not HF_TOKEN:
 
 client = InferenceClient(token=HF_TOKEN)
 
-# Model selector
 selected_model_name = st.selectbox("Select Model:", list(MODELS.keys()))
 MODEL = MODELS[selected_model_name]
 
 st.info(f"Using: {MODEL}")
 
-prompt = st.text_area(
-    "Enter your prompt:", 
-    placeholder="e.g. Create a portfolio webpage with a navbar and about section"
-)
+prompt = st.text_area("Enter your prompt:", placeholder="e.g. Create a portfolio webpage")
 
 if st.button("Generate Webpage"):
     if prompt:
         with st.spinner(f"Generating HTML using {selected_model_name}..."):
             try:
-                instruction = (
-                    f"Generate a complete HTML5 webpage for the following request:\n"
-                    f"{prompt}\n\n"
-                    f"Requirements:\n"
-                    f"- Include complete HTML structure with <!DOCTYPE html>\n"
-                    f"- Add embedded CSS in <style> tags\n"
-                    f"- Make it responsive and visually appealing\n"
-                    f"- Return ONLY the HTML code, no explanations"
-                )
+                instruction = f"Generate a complete HTML5 webpage for: {prompt}\n\nInclude full HTML structure with embedded CSS. Return ONLY the HTML code."
                 
                 messages = [{"role": "user", "content": instruction}]
                 
@@ -60,41 +47,35 @@ if st.button("Generate Webpage"):
                 
                 html_code = response.choices[0].message.content.strip()
                 
-                # Clean up markdown formatting
                 if "```
-                    html_code = html_code.split("```html").split("```
+                    parts = html_code.split("```html")
+                    if len(parts) > 1:
+                        html_code = parts[1].split("```
                 elif "```" in html_code:
-                    html_code = html_code.split("``````")[0].strip()
+                    parts = html_code.split("```
+                    if len(parts) > 2:
+                        html_code = parts.strip()[1]
                 
                 if not html_code.endswith("</html>"):
                     html_code += "\n</html>"
 
-                st.success("✅ Webpage generated successfully!")
+                st.success("✅ Generated successfully!")
                 
                 st.subheader("Generated HTML Code")
                 st.code(html_code, language="html")
 
-                st.subheader("Live Webpage Preview")
+                st.subheader("Live Preview")
                 st.components.v1.html(html_code, height=500, scrolling=True)
 
-                def download_button(code: str, filename: str):
-                    b64 = base64.b64encode(code.encode()).decode()
-                    href = f'<a href="data:text/html;base64,{b64}" download="{filename}">Download as {filename}</a>'
-                    st.markdown(href, unsafe_allow_html=True)
+                b64 = base64.b64encode(html_code.encode()).decode()
+                href = f'<a href="data:text/html;base64,{b64}" download="webpage.html">Download HTML</a>'
+                st.markdown(href, unsafe_allow_html=True)
 
-                download_button(html_code, "generated_webpage.html")
-
-                st.subheader("Copy Code to Clipboard")
-                st.text_area("Click inside to copy", html_code, height=200)
+                st.subheader("Copy Code")
+                st.text_area("Click to copy", html_code, height=200)
                 
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
-                st.warning(
-                    "⚠️ **Troubleshooting Tips:**\n\n"
-                    "1. Try selecting a different model from the dropdown above\n"
-                    "2. Wait a few minutes and retry (model might be busy)\n"
-                    "3. Check your internet connection\n"
-                    "4. Verify your HF token is valid at https://huggingface.co/settings/tokens"
-                )
+                st.warning("Try a different model from the dropdown or wait a few minutes.")
     else:
-        st.warning("Please enter a prompt to generate code.")
+        st.warning("Please enter a prompt.")
