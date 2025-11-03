@@ -45,7 +45,6 @@ if st.button("Generate Webpage"):
                     temperature=0.7,
                 )
                 
-                # Handle different response formats
                 try:
                     html_code = response.choices[0].message.content.strip()
                 except (AttributeError, TypeError):
@@ -54,21 +53,20 @@ if st.button("Generate Webpage"):
                     except:
                         html_code = str(response).strip()
                 
-                # Clean markdown code blocks
-                backticks = "```
-                if backticks + "html" in html_code:
-                    parts = html_code.split(backticks + "html")
+                code_fence = chr(96) + chr(96) + chr(96)
+                if code_fence + "html" in html_code:
+                    parts = html_code.split(code_fence + "html")
                     if len(parts) > 1:
-                        html_code = parts.split(backticks).strip()[1]
-                elif backticks in html_code:
-                    parts = html_code.split(backticks)
+                        html_code = parts[1].split(code_fence)[0].strip()
+                elif code_fence in html_code:
+                    parts = html_code.split(code_fence)
                     if len(parts) > 2:
-                        html_code = parts.strip()[1]
+                        html_code = parts[1].strip()
                 
                 if not html_code.endswith("</html>"):
                     html_code += "\n</html>"
 
-                st.success("✅ Generated successfully!")
+                st.success("Generated successfully!")
                 
                 st.subheader("Generated HTML Code")
                 st.code(html_code, language="html")
@@ -84,9 +82,7 @@ if st.button("Generate Webpage"):
                 st.text_area("Click to copy", html_code, height=200)
                 
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
-                st.info(f"Response type: {type(response)}")
-                st.info(f"Response content: {response}")
+                st.error(f"Error: {str(e)}")
                 st.warning("Try a different model from the dropdown.")
     else:
         st.warning("Please enter a prompt.")
