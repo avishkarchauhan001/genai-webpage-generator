@@ -45,18 +45,25 @@ if st.button("Generate Webpage"):
                     temperature=0.7,
                 )
                 
-                html_code = response.choices.message.content.strip()
+                # Handle different response formats
+                try:
+                    html_code = response.choices[0].message.content.strip()
+                except (AttributeError, TypeError):
+                    try:
+                        html_code = response[0].get('generated_text', '').strip()
+                    except:
+                        html_code = str(response).strip()
                 
-                # Clean markdown code blocks - using variable to avoid syntax error
-                backticks = "```"
+                # Clean markdown code blocks
+                backticks = "```
                 if backticks + "html" in html_code:
                     parts = html_code.split(backticks + "html")
                     if len(parts) > 1:
-                        html_code = parts[1].split(backticks)[0].strip()
+                        html_code = parts.split(backticks).strip()[1]
                 elif backticks in html_code:
                     parts = html_code.split(backticks)
                     if len(parts) > 2:
-                        html_code = parts[1].strip()
+                        html_code = parts.strip()[1]
                 
                 if not html_code.endswith("</html>"):
                     html_code += "\n</html>"
@@ -78,6 +85,8 @@ if st.button("Generate Webpage"):
                 
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
-                st.warning("Try a different model from the dropdown or wait a few minutes.")
+                st.info(f"Response type: {type(response)}")
+                st.info(f"Response content: {response}")
+                st.warning("Try a different model from the dropdown.")
     else:
         st.warning("Please enter a prompt.")
