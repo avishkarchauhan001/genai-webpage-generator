@@ -15,6 +15,7 @@ MODELS = {
     "Qwen 2.5 Coder": "Qwen/Qwen2.5-Coder-7B-Instruct",
     "Meta Llama 3.2": "meta-llama/Llama-3.2-3B-Instruct",
     "Google Gemma 2": "google/gemma-2-2b-it",
+    "Mixtral 8x7B": "mistralai/Mixtral-8x7B-Instruct-v0.1",
 }
 
 if not HF_TOKEN:
@@ -27,7 +28,12 @@ client = InferenceClient(token=HF_TOKEN)
 selected_model_name = st.selectbox("Select Model:", list(MODELS.keys()))
 MODEL = MODELS[selected_model_name]
 
-prompt = st.text_area("Enter your prompt:", placeholder="e.g. Create a portfolio webpage with a navbar and about section")
+st.info(f"Using: {MODEL}")
+
+prompt = st.text_area(
+    "Enter your prompt:", 
+    placeholder="e.g. Create a portfolio webpage with a navbar and about section"
+)
 
 if st.button("Generate Webpage"):
     if prompt:
@@ -63,7 +69,8 @@ if st.button("Generate Webpage"):
                 if not html_code.endswith("</html>"):
                     html_code += "\n</html>"
 
-                st.success("✅ Generated successfully!")
+                st.success("✅ Webpage generated successfully!")
+                
                 st.subheader("Generated HTML Code")
                 st.code(html_code, language="html")
 
@@ -82,6 +89,12 @@ if st.button("Generate Webpage"):
                 
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
-                st.warning("This model may not be available on the free tier. Try selecting a different model from the dropdown.")
+                st.warning(
+                    "⚠️ **Troubleshooting Tips:**\n\n"
+                    "1. Try selecting a different model from the dropdown above\n"
+                    "2. Wait a few minutes and retry (model might be busy)\n"
+                    "3. Check your internet connection\n"
+                    "4. Verify your HF token is valid at https://huggingface.co/settings/tokens"
+                )
     else:
         st.warning("Please enter a prompt to generate code.")
